@@ -7,10 +7,10 @@ import { fmt } from '../utils/geometry';
 interface ExplanationPanelProps {
   matrix: number[][];
   outSize: { w: number; h: number };
-  forceA4: boolean;
+  aspectRatio: number | "auto";
 }
 
-export default function ExplanationPanel({ matrix, outSize, forceA4 }: ExplanationPanelProps) {
+export default function ExplanationPanel({ matrix, outSize, aspectRatio }: ExplanationPanelProps) {
   return (
     <div className="mt-12 text-left max-w-4xl w-full mb-16 bg-gray-900/30 p-8 rounded-2xl border border-gray-800 shadow-2xl">
       <h3 className="font-bold mb-6 text-lg tracking-widest uppercase text-white border-b border-gray-700 pb-4">
@@ -28,8 +28,10 @@ export default function ExplanationPanel({ matrix, outSize, forceA4 }: Explanati
         <section>
           <h4 className="text-emerald-400 font-semibold mb-2">Step 2: Destination Dimensionality</h4>
           <p className="text-sm text-gray-400 leading-relaxed mb-4">
-            To prevent perspective "squashing", the output dimensions are calculated using the midpoints of the source polygon edges. 
-            {forceA4 ? " Because the A4 override is active, the width is used to enforce a strict 1:1.414 aspect ratio." : " The true aspect ratio is dynamically estimated based on these distances."}
+            To prevent perspective "squashing", the output dimensions are calculated carefully. 
+            {aspectRatio === "auto" 
+              ? " The algorithm automatically estimates the true proportions by taking the maximum width (comparing top/bottom edges) and maximum height (comparing left/right edges) of the distorted polygon." 
+              : ` The user has enforced a strict real-world aspect ratio of ${aspectRatio.toFixed(3)}. The algorithm calculates the maximum dimension to preserve image resolution, and mathematically scales the opposing dimension to fit perfectly into the requested ratio.`}
           </p>
           <div className="bg-black/40 py-4 rounded-lg border border-gray-800/50 flex flex-col items-center gap-2">
             <BlockMath math={`Width = ${outSize.w}px`} />
