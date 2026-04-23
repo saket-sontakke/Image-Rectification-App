@@ -473,7 +473,7 @@ export default function Home() {
       const result = await Tesseract.recognize(dataUrl, 'eng');
       
       setOcrText(result.data.text || "No text detected.");
-      setOcrWords(result.data.words || []);
+      setOcrWords((result.data as any).words || []);
     } catch (error) {
       console.error("OCR Error:", error);
       setOcrText("Error occurred during text extraction.");
@@ -516,7 +516,7 @@ export default function Home() {
       page.drawImage(image, { x: 0, y: 0, width, height });
 
       const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
