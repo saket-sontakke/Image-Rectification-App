@@ -195,20 +195,44 @@ export default function Home() {
     });
   }, [points, dragTick]);
 
-  const toCvCoords = useCallback((e: React.MouseEvent<HTMLCanvasElement>): Point => {
-    const canvas = visibleCanvasRef.current!;
-    const rect   = canvas.getBoundingClientRect();
-    const img    = imgRef.current!;
-    return {
-      x: (e.clientX - rect.left) * (img.width  / rect.width),
-      y: (e.clientY - rect.top)  * (img.height / rect.height),
-    };
-  }, []);
+  // const toCvCoords = useCallback((e: React.MouseEvent<HTMLCanvasElement>): Point => {
+  //   const canvas = visibleCanvasRef.current!;
+  //   const rect   = canvas.getBoundingClientRect();
+  //   const img    = imgRef.current!;
+  //   return {
+  //     x: (e.clientX - rect.left) * (img.width  / rect.width),
+  //     y: (e.clientY - rect.top)  * (img.height / rect.height),
+  //   };
+  // }, []);
+  const toCvCoords = useCallback((e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>): Point => {
+  const canvas = visibleCanvasRef.current!;
+  const rect   = canvas.getBoundingClientRect();
+  const img    = imgRef.current!;
 
-  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    const { x, y } = toCvCoords(e);
-    const hitR = Math.max(20, (imgRef.current?.width ?? 500) * 0.03);
-    let bestIdx  = -1;
+  // Check if it's a touch event
+  let clientX, clientY;
+  if ('touches' in e) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+
+  return {
+    x: (clientX - rect.left) * (img.width  / rect.width),
+    y: (clientY - rect.top)  * (img.height / rect.height),
+  };
+}, []);
+
+  // const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  //   const { x, y } = toCvCoords(e);
+  //   const hitR = Math.max(20, (imgRef.current?.width ?? 500) * 0.03);
+  //   let bestIdx  = -1;
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const { x, y } = toCvCoords(e);
+  const hitR = Math.max(20, (imgRef.current?.width ?? 500) * 0.03);
+  let bestIdx  = -1;
     let bestDist = Infinity;
     points.forEach((p, i) => {
       const d = Math.hypot(p.x - x, p.y - y);
@@ -219,7 +243,12 @@ export default function Home() {
     setDragTick((t) => t + 1);
   }, [points, toCvCoords]);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  // const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  //   if (dragIdxRef.current === -1) return;
+  //   const idx   = dragIdxRef.current;
+  //   const img   = imgRef.current!;
+  //   const { x, y } = toCvCoords(e);
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (dragIdxRef.current === -1) return;
     const idx   = dragIdxRef.current;
     const img   = imgRef.current!;
@@ -961,7 +990,7 @@ export default function Home() {
                 </span>
                 
                 <div className="relative w-full flex justify-center max-w-[600px]">
-                  <canvas
+                  {/* <canvas
                     ref={visibleCanvasRef}
                     className="border border-gray-700 rounded cursor-crosshair w-full block bg-gray-900/50 shadow-lg"
                     style={{ height: "auto" }}
@@ -969,6 +998,23 @@ export default function Home() {
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
                     onMouseLeave={handleMouseUp}
+                  /> */}
+                  <canvas
+                    ref={visibleCanvasRef}
+                    className="border border-gray-700 rounded cursor-crosshair w-full block bg-gray-900/50 shadow-lg"
+                    style={{ height: "auto", touchAction: "none" }} /* Prevent page scroll while dragging */
+                    
+                    /* Mouse Events */
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    
+                    /* Touch Events */
+                    onTouchStart={handleMouseDown}
+                    onTouchMove={handleMouseMove}
+                    onTouchEnd={handleMouseUp}
+                    onTouchCancel={handleMouseUp}
                   />
                   
                   {/* Floating Action Overlay for Input Area */}
