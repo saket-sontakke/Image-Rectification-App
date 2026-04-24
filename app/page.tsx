@@ -11,8 +11,6 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 type AspectRatioMode = "auto" | number;
 
-// Define the sample images for the sidebar
-// MAKE SURE THESE EXTENSIONS MATCH YOUR ACTUAL FILES (.png vs .jpg)
 const SAMPLE_CATEGORIES = [
   {
     title: "DocScanner",
@@ -195,133 +193,73 @@ export default function Home() {
     });
   }, [points, dragTick]);
 
-  // const toCvCoords = useCallback((e: React.MouseEvent<HTMLCanvasElement>): Point => {
-  //   const canvas = visibleCanvasRef.current!;
-  //   const rect   = canvas.getBoundingClientRect();
-  //   const img    = imgRef.current!;
-  //   return {
-  //     x: (e.clientX - rect.left) * (img.width  / rect.width),
-  //     y: (e.clientY - rect.top)  * (img.height / rect.height),
-  //   };
-  // }, []);
   const toCvCoords = useCallback((e: React.PointerEvent<HTMLCanvasElement>): Point => {
-  const canvas = visibleCanvasRef.current!;
-  const rect   = canvas.getBoundingClientRect();
-  const img    = imgRef.current!;
+    const canvas = visibleCanvasRef.current!;
+    const rect   = canvas.getBoundingClientRect();
+    const img    = imgRef.current!;
 
-  return {
-    x: (e.clientX - rect.left) * (img.width  / rect.width),
-    y: (e.clientY - rect.top)  * (img.height / rect.height),
-  };
-}, []);
+    return {
+      x: (e.clientX - rect.left) * (img.width  / rect.width),
+      y: (e.clientY - rect.top)  * (img.height / rect.height),
+    };
+  }, []);
 
-  // const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-  //   const { x, y } = toCvCoords(e);
-  //   const hitR = Math.max(20, (imgRef.current?.width ?? 500) * 0.03);
-  //   let bestIdx  = -1;
-  //   let bestDist = Infinity;
-  //   points.forEach((p, i) => {
-  //     const d = Math.hypot(p.x - x, p.y - y);
-  //     if (d < hitR && d < bestDist) { bestDist = d; bestIdx = i; }
-  //   });
-  //   if (bestIdx === -1) return;
-  //   dragIdxRef.current = bestIdx;
-  //   setDragTick((t) => t + 1);
-  // }, [points, toCvCoords]);
-
-  // const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-  //   if (dragIdxRef.current === -1) return;
-  //   const idx   = dragIdxRef.current;
-  //   const img   = imgRef.current!;
-  //   const { x, y } = toCvCoords(e);
-
-  //   const margin = Math.max(5, img.width * 0.005);
-  //   let cx = Math.max(margin, Math.min(img.width  - margin, x));
-  //   let cy = Math.max(margin, Math.min(img.height - margin, y));
-
-  //   const others = points.filter((_, i) => i !== idx);
-  //   const ocx    = others.reduce((s, p) => s + p.x, 0) / 3;
-  //   const ocy    = others.reduce((s, p) => s + p.y, 0) / 3;
-
-  //   const allCx = points.reduce((s, p) => s + p.x, 0) / 4;
-  //   const allCy = points.reduce((s, p) => s + p.y, 0) / 4;
-  //   const ownLeft  = points[idx].x <= allCx;
-  //   const ownAbove = points[idx].y <= allCy;
-
-  //   const minGap = Math.max(10, img.width * 0.01);
-  //   if (ownLeft  && cx >= ocx - minGap) cx = ocx - minGap;
-  //   if (!ownLeft  && cx <= ocx + minGap) cx = ocx + minGap;
-  //   if (ownAbove && cy >= ocy - minGap) cy = ocy - minGap;
-  //   if (!ownAbove && cy <= ocy + minGap) cy = ocy + minGap;
-
-  //   const newPoints = [...points];
-  //   newPoints[idx]  = { x: cx, y: cy };
-  //   setPoints(newPoints);
-  //   setDragTick((t) => t + 1);
-  // }, [points, toCvCoords]);
-
-  // const handleMouseUp = useCallback(() => {
-  //   dragIdxRef.current = -1;
-  //   setDragTick((t) => t + 1);
-  // }, []);
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
-  // This is the magic line: it locks the touch focus to the canvas 
-  // so the drag doesn't drop if your finger moves fast!
-  e.currentTarget.setPointerCapture(e.pointerId); 
-  
-  const { x, y } = toCvCoords(e);
-  const hitR = Math.max(20, (imgRef.current?.width ?? 500) * 0.03);
-  let bestIdx  = -1;
-  let bestDist = Infinity;
-  
-  points.forEach((p, i) => {
-    const d = Math.hypot(p.x - x, p.y - y);
-    if (d < hitR && d < bestDist) { bestDist = d; bestIdx = i; }
-  });
-  
-  if (bestIdx === -1) return;
-  dragIdxRef.current = bestIdx;
-  setDragTick((t) => t + 1);
-}, [points, toCvCoords]);
+    e.currentTarget.setPointerCapture(e.pointerId); 
+    
+    const { x, y } = toCvCoords(e);
+    const hitR = Math.max(20, (imgRef.current?.width ?? 500) * 0.03);
+    let bestIdx  = -1;
+    let bestDist = Infinity;
+    
+    points.forEach((p, i) => {
+      const d = Math.hypot(p.x - x, p.y - y);
+      if (d < hitR && d < bestDist) { bestDist = d; bestIdx = i; }
+    });
+    
+    if (bestIdx === -1) return;
+    dragIdxRef.current = bestIdx;
+    setDragTick((t) => t + 1);
+  }, [points, toCvCoords]);
 
-const handlePointerMove = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
-  if (dragIdxRef.current === -1) return;
-  const idx   = dragIdxRef.current;
-  const img   = imgRef.current!;
-  const { x, y } = toCvCoords(e);
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (dragIdxRef.current === -1) return;
+    const idx   = dragIdxRef.current;
+    const img   = imgRef.current!;
+    const { x, y } = toCvCoords(e);
 
-  const margin = Math.max(5, img.width * 0.005);
-  let cx = Math.max(margin, Math.min(img.width  - margin, x));
-  let cy = Math.max(margin, Math.min(img.height - margin, y));
+    const margin = Math.max(5, img.width * 0.005);
+    let cx = Math.max(margin, Math.min(img.width  - margin, x));
+    let cy = Math.max(margin, Math.min(img.height - margin, y));
 
-  const others = points.filter((_, i) => i !== idx);
-  const ocx    = others.reduce((s, p) => s + p.x, 0) / 3;
-  const ocy    = others.reduce((s, p) => s + p.y, 0) / 3;
+    const others = points.filter((_, i) => i !== idx);
+    const ocx    = others.reduce((s, p) => s + p.x, 0) / 3;
+    const ocy    = others.reduce((s, p) => s + p.y, 0) / 3;
 
-  const allCx = points.reduce((s, p) => s + p.x, 0) / 4;
-  const allCy = points.reduce((s, p) => s + p.y, 0) / 4;
-  const ownLeft  = points[idx].x <= allCx;
-  const ownAbove = points[idx].y <= allCy;
+    const allCx = points.reduce((s, p) => s + p.x, 0) / 4;
+    const allCy = points.reduce((s, p) => s + p.y, 0) / 4;
+    const ownLeft  = points[idx].x <= allCx;
+    const ownAbove = points[idx].y <= allCy;
 
-  const minGap = Math.max(10, img.width * 0.01);
-  if (ownLeft  && cx >= ocx - minGap) cx = ocx - minGap;
-  if (!ownLeft  && cx <= ocx + minGap) cx = ocx + minGap;
-  if (ownAbove && cy >= ocy - minGap) cy = ocy - minGap;
-  if (!ownAbove && cy <= ocy + minGap) cy = ocy + minGap;
+    const minGap = Math.max(10, img.width * 0.01);
+    if (ownLeft  && cx >= ocx - minGap) cx = ocx - minGap;
+    if (!ownLeft  && cx <= ocx + minGap) cx = ocx + minGap;
+    if (ownAbove && cy >= ocy - minGap) cy = ocy - minGap;
+    if (!ownAbove && cy <= ocy + minGap) cy = ocy + minGap;
 
-  const newPoints = [...points];
-  newPoints[idx]  = { x: cx, y: cy };
-  setPoints(newPoints);
-  setDragTick((t) => t + 1);
-}, [points, toCvCoords]);
+    const newPoints = [...points];
+    newPoints[idx]  = { x: cx, y: cy };
+    setPoints(newPoints);
+    setDragTick((t) => t + 1);
+  }, [points, toCvCoords]);
 
-const handlePointerUp = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
-  if (dragIdxRef.current !== -1) {
-    e.currentTarget.releasePointerCapture(e.pointerId);
-  }
-  dragIdxRef.current = -1;
-  setDragTick((t) => t + 1);
-}, []);
+  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (dragIdxRef.current !== -1) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+    dragIdxRef.current = -1;
+    setDragTick((t) => t + 1);
+  }, []);
 
   const detectCorners = useCallback(() => {
     const cv = (window as any).cv;
